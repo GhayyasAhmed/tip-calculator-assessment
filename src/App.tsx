@@ -1,6 +1,11 @@
 import { useMemo, useState } from 'react'
 import styles from './App.module.css'
-import { calculateTip } from './utils/tipCalculator'
+import {
+  calculateTip,
+  validateBill,
+  validatePeople,
+  validateTipPercent,
+} from './utils/tipCalculator'
 
 const TIP_PRESETS = [10, 15, 20]
 
@@ -22,31 +27,44 @@ function App() {
   const [activePreset, setActivePreset] = useState<number | null>(null)
   const [customTip, setCustomTip] = useState('')
   const [people, setPeople] = useState('')
+  const [billTouched, setBillTouched] = useState(false)
+  const [customTipTouched, setCustomTipTouched] = useState(false)
+  const [peopleTouched, setPeopleTouched] = useState(false)
 
   const tipPercent =
     activePreset ?? (customTip.trim() === '' ? 0 : parseInputValue(customTip))
+  const billValue = parseInputValue(bill)
+  const peopleValue = parseInputValue(people)
+  const billValidation = validateBill(billValue)
+  const tipValidation = validateTipPercent(tipPercent)
+  const peopleValidation = validatePeople(peopleValue)
+  const billError =
+    (billTouched || bill.trim() !== '') && !billValidation.isValid
+      ? billValidation.message
+      : undefined
+  const tipError =
+    (customTipTouched || customTip.trim() !== '') && !tipValidation.isValid
+      ? tipValidation.message
+      : undefined
+  const peopleError =
+    (peopleTouched || people.trim() !== '') && !peopleValidation.isValid
+      ? peopleValidation.message
+      : undefined
+  const isCalculationReady =
+    billValidation.isValid && tipValidation.isValid && peopleValidation.isValid
 
   const calculation = useMemo(() => {
-    const billValue = parseInputValue(bill)
-    const peopleValue = parseInputValue(people)
-
-    if (
-      !Number.isFinite(billValue) ||
-      !Number.isFinite(tipPercent) ||
-      !Number.isInteger(peopleValue) ||
-      billValue <= 0 ||
-      tipPercent < 0 ||
-      peopleValue < 1
-    ) {
+    if (!isCalculationReady) {
       return null
     }
 
     return calculateTip(billValue, tipPercent, peopleValue)
-  }, [bill, people, tipPercent])
+  }, [billValue, isCalculationReady, peopleValue, tipPercent])
 
   const handlePresetClick = (preset: number) => {
     setActivePreset(preset)
     setCustomTip('')
+    setCustomTipTouched(false)
   }
 
   const handleCustomTipChange = (value: string) => {
@@ -59,6 +77,9 @@ function App() {
     setActivePreset(null)
     setCustomTip('')
     setPeople('')
+    setBillTouched(false)
+    setCustomTipTouched(false)
+    setPeopleTouched(false)
   }
 
   return (
@@ -73,7 +94,11 @@ function App() {
       </section>
 
       <section className={styles.calculator} aria-label="Tip calculator">
-        <div className={styles.formPanel}>
+        <form
+          className={styles.formPanel}
+          noValidate
+          onSubmit={(event) => event.preventDefault()}
+        >
           <div className={styles.fieldGroup}>
             <label className={styles.label} htmlFor="bill">
               Bill amount
@@ -83,14 +108,19 @@ function App() {
               <span className={styles.prefix}>Rs</span>
               <input
                 id="bill"
-                className={styles.input}
+                className={`${styles.input} ${billError ? styles.inputInvalid : ''}`}
                 inputMode="decimal"
                 placeholder="0.00"
                 type="text"
                 value={bill}
-                onChange={(event) => setBill(event.target.value)}
+                onBlur={() => setBillTouched(true)}
+                onChange={(event) => {
+                  setBill(event.target.value)
+                  setBillTouched(true)
+                }}
               />
             </div>
+            {billError ? <p className={styles.errorMessage}>{billError}</p> : null}
           </div>
 
           <fieldset className={styles.fieldGroup}>
@@ -111,11 +141,12 @@ function App() {
               <div className={styles.customTipShell}>
                 <input
                   id="custom-tip"
-                  className={styles.input}
+                  className={`${styles.input} ${tipError ? styles.inputInvalid : ''}`}
                   inputMode="decimal"
                   placeholder="Custom"
                   type="text"
                   value={customTip}
+                  onBlur={() => setCustomTipTouched(true)}
                   onChange={(event) =>
                     handleCustomTipChange(event.target.value)
                   }
@@ -123,6 +154,7 @@ function App() {
                 <span className={styles.suffix}>%</span>
               </div>
             </div>
+            {tipError ? <p className={styles.errorMessage}>{tipError}</p> : null}
           </fieldset>
 
           <div className={styles.fieldGroup}>
@@ -131,19 +163,26 @@ function App() {
             </label>
             <input
               id="people"
-              className={styles.input}
+              className={`${styles.input} ${peopleError ? styles.inputInvalid : ''}`}
               inputMode="numeric"
               placeholder="1"
               type="text"
               value={people}
-              onChange={(event) => setPeople(event.target.value)}
+              onBlur={() => setPeopleTouched(true)}
+              onChange={(event) => {
+                setPeople(event.target.value)
+                setPeopleTouched(true)
+              }}
             />
+            {peopleError ? (
+              <p className={styles.errorMessage}>{peopleError}</p>
+            ) : null}
           </div>
 
           <button className={styles.resetButton} type="button" onClick={handleReset}>
             Reset
           </button>
-        </div>
+        </form>
 
         <aside className={styles.outputPanel} aria-label="Calculation results">
           <div>
