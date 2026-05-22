@@ -26,7 +26,7 @@ Build the production version:
 npm run build
 ```
 
-Deployment will be done with GitHub Pages. The deployed URL is: [TO BE ADDED AFTER DEPLOY]
+Deployment will be done with GitHub Pages. The deployed URL is: https://GhayyasAhmed.github.io/tip-calculator-assessment
 
 ## 2. Stack & design choices
 

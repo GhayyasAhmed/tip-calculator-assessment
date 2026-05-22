@@ -34,4 +34,4 @@ npm run build
 
 Deployment will be done through GitHub Pages using `gh-pages`.
 
-Live URL: [TO BE ADDED AFTER DEPLOY]
+Live URL: https://GhayyasAhmed.github.io/tip-calculator-assessment
