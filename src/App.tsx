@@ -52,6 +52,9 @@ function App() {
       : undefined
   const isCalculationReady =
     billValidation.isValid && tipValidation.isValid && peopleValidation.isValid
+  const billErrorId = billError ? 'bill-error' : undefined
+  const tipErrorId = tipError ? 'custom-tip-error' : undefined
+  const peopleErrorId = peopleError ? 'people-error' : undefined
 
   const calculation = useMemo(() => {
     if (!isCalculationReady) {
@@ -109,6 +112,8 @@ function App() {
               <input
                 id="bill"
                 className={`${styles.input} ${billError ? styles.inputInvalid : ''}`}
+                aria-describedby={billErrorId}
+                aria-invalid={Boolean(billError)}
                 inputMode="decimal"
                 placeholder="0.00"
                 type="text"
@@ -120,7 +125,11 @@ function App() {
                 }}
               />
             </div>
-            {billError ? <p className={styles.errorMessage}>{billError}</p> : null}
+            {billError ? (
+              <p className={styles.errorMessage} id="bill-error">
+                {billError}
+              </p>
+            ) : null}
           </div>
 
           <fieldset className={styles.fieldGroup}>
@@ -132,6 +141,7 @@ function App() {
                   className={`${styles.tipButton} ${
                     activePreset === preset ? styles.tipButtonActive : ''
                   }`}
+                  aria-pressed={activePreset === preset}
                   type="button"
                   onClick={() => handlePresetClick(preset)}
                 >
@@ -139,9 +149,14 @@ function App() {
                 </button>
               ))}
               <div className={styles.customTipShell}>
+                <label className={styles.visuallyHidden} htmlFor="custom-tip">
+                  Custom tip percentage
+                </label>
                 <input
                   id="custom-tip"
                   className={`${styles.input} ${tipError ? styles.inputInvalid : ''}`}
+                  aria-describedby={tipErrorId}
+                  aria-invalid={Boolean(tipError)}
                   inputMode="decimal"
                   placeholder="Custom"
                   type="text"
@@ -154,7 +169,11 @@ function App() {
                 <span className={styles.suffix}>%</span>
               </div>
             </div>
-            {tipError ? <p className={styles.errorMessage}>{tipError}</p> : null}
+            {tipError ? (
+              <p className={styles.errorMessage} id="custom-tip-error">
+                {tipError}
+              </p>
+            ) : null}
           </fieldset>
 
           <div className={styles.fieldGroup}>
@@ -164,6 +183,8 @@ function App() {
             <input
               id="people"
               className={`${styles.input} ${peopleError ? styles.inputInvalid : ''}`}
+              aria-describedby={peopleErrorId}
+              aria-invalid={Boolean(peopleError)}
               inputMode="numeric"
               placeholder="1"
               type="text"
@@ -175,7 +196,9 @@ function App() {
               }}
             />
             {peopleError ? (
-              <p className={styles.errorMessage}>{peopleError}</p>
+              <p className={styles.errorMessage} id="people-error">
+                {peopleError}
+              </p>
             ) : null}
           </div>
 
