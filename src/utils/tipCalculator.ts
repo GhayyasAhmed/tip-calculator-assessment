@@ -12,9 +12,12 @@ export type ValidationResult = {
   message?: string
 }
 
-const roundCurrency = (value: number) => Math.round(value * 100) / 100
+const toCurrencyUnits = (value: number) => Number((value * 100).toFixed(10))
 
-const roundCurrencyUp = (value: number) => Math.ceil(value * 100) / 100
+const roundCurrency = (value: number) => Math.round(toCurrencyUnits(value)) / 100
+
+const roundCurrencyUp = (value: number) =>
+  Math.ceil(toCurrencyUnits(value)) / 100
 
 export function calculateTip(
   bill: number,
